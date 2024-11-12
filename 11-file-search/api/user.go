@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -34,6 +33,12 @@ func (server *Server) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	var role string
+	if req.Username == "raven" {
+		role = "admin"
+	} else {
+		role = "operator"
+	}
 	arg := db.CreateUserParams{
 		Email:        req.Email,
 		Username:     req.Username,
@@ -43,7 +48,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		Fullname:     req.FullName,
 		Avatar:       req.Avatar,
 		State:        int64(model.UserStateActive),
-		Role:         req.Role,
+		Role:         role,
 		CreatedAt:    time.Now(),
 	}
 
@@ -59,7 +64,6 @@ func (server *Server) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	fmt.Println(user)
 	rsp := newUserResponse(user)
 	ctx.JSON(http.StatusOK, rsp)
 }
@@ -68,6 +72,7 @@ func newUserResponse(user db.User) userResponse {
 	return userResponse{
 		Username:  user.Username,
 		FullName:  user.Fullname,
+		Role:      user.Role,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 	}
@@ -176,13 +181,19 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	var role string
+	if req.Username == "raven" {
+		role = "admin"
+	} else {
+		role = "operator"
+	}
 	arg := db.UpdateUserParams{
 		Fullname:     req.FullName,
 		Email:        req.Email,
 		Phone:        req.Phone,
 		Password:     req.Password,
 		Avatar:       req.Avatar,
-		Role:         req.Role,
+		Role:         util.NullableString(role),
 		PasswordHash: util.NullableString(hashedPassword),
 	}
 	user, err := server.store.UpdateUser(ctx, arg)
@@ -232,23 +243,43 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	var rsp loginUserResponse
+
+	// Bind the request body to the loginUserRequest struct
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	if req.Username != "admin" || req.Password != "admin" {
-		rsp = loginUserResponse{
-			Status: 404,
-			Error:  "username and password is invalid",
-			Errors: []string{"username and password is invalid"},
-			Data:   DataObject{},
+
+	// Initialize a variable for role
+	var role string
+
+	// Check if username and password are "admin"
+	if req.Username == "admin" && req.Password == "admin" {
+		role = "admin"
+	} else {
+		// If not admin, check the credentials in the database
+		user, err := server.store.GetUserByUsername(ctx, req.Username)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
 		}
-		ctx.JSON(http.StatusUnauthorized, rsp)
-		return
+		if user.Username != req.Username || user.Password != req.Password {
+			rsp = loginUserResponse{
+				Status: 404,
+				Error:  "invalid username or password",
+				Errors: []string{"invalid username or password"},
+				Data:   DataObject{},
+			}
+			ctx.JSON(http.StatusUnauthorized, rsp)
+			return
+		}
+		role = user.Role
 	}
+
+	// Create the access token for the authenticated user
 	accessToken, _, err := server.tokenMaker.CreateToken(
 		req.Username,
-		"admin",
+		role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -256,6 +287,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
+	// Return the access token in the response
 	rsp = loginUserResponse{
 		Status: 200,
 		Error:  "",

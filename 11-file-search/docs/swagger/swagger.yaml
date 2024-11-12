@@ -52,8 +52,6 @@ definitions:
         type: string
       phone:
         type: string
-      role:
-        type: string
       username:
         type: string
     required:
@@ -61,7 +59,6 @@ definitions:
     - email
     - full_name
     - password
-    - role
     - username
     type: object
   api.loginUserRequest:
@@ -112,6 +109,8 @@ definitions:
       email:
         type: string
       full_name:
+        type: string
+      role:
         type: string
       username:
         type: string

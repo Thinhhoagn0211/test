@@ -434,7 +434,6 @@
                 "email",
                 "full_name",
                 "password",
-                "role",
                 "username"
             ],
             "properties": {
@@ -452,9 +451,6 @@
                     "minLength": 6
                 },
                 "phone": {
-                    "type": "string"
-                },
-                "role": {
                     "type": "string"
                 },
                 "username": {
@@ -535,6 +531,9 @@
                     "type": "string"
                 },
                 "full_name": {
+                    "type": "string"
+                },
+                "role": {
                     "type": "string"
                 },
                 "username": {

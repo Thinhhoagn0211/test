@@ -440,7 +440,6 @@ const docTemplate = `{
                 "email",
                 "full_name",
                 "password",
-                "role",
                 "username"
             ],
             "properties": {
@@ -458,9 +457,6 @@ const docTemplate = `{
                     "minLength": 6
                 },
                 "phone": {
-                    "type": "string"
-                },
-                "role": {
                     "type": "string"
                 },
                 "username": {
@@ -541,6 +537,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "full_name": {
+                    "type": "string"
+                },
+                "role": {
                     "type": "string"
                 },
                 "username": {

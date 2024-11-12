@@ -13,10 +13,10 @@ type createUserRequest struct {
 	Phone    string `json:"phone"`
 	FullName string `json:"full_name" binding:"required"`
 	Avatar   string `json:"avatar" binding:"required"`
-	Role     string `json:"role" binding:"required"`
 }
 
 type updateUserRequest struct {
+	Username string         `json:"username" binding:"required,alphanum"`
 	Email    sql.NullString `json:"email" binding:"required,email"`
 	Password sql.NullString `json:"password" binding:"required,min=6"`
 	Phone    sql.NullString `json:"phone"`
@@ -42,6 +42,7 @@ type Response struct {
 type userResponse struct {
 	Username  string    `json:"username"`
 	FullName  string    `json:"full_name"`
+	Role      string    `json:"role"`
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 }

@@ -14,6 +14,7 @@ type Querier interface {
 	// If limit is not provided, return all results
 	GetFiles(ctx context.Context, arg GetFilesParams) ([]string, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUsersAsc(ctx context.Context, arg GetUsersAscParams) ([]User, error)
 	GetUsersDesc(ctx context.Context, arg GetUsersDescParams) ([]User, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

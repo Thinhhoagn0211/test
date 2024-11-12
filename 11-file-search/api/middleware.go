@@ -39,17 +39,20 @@ func (server *Server) authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			return
 		}
 
-		accesToken := fields[1]
-		payload, err := tokenMaker.VerifyToken(accesToken)
+		accessToken := fields[1]
+		payload, err := tokenMaker.VerifyToken(accessToken)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
+
 		accessibleRoles, err := server.enforcer.GetRolesForUser(payload.Role)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
+		fmt.Printf("User role: %s, Accessible roles: %v\n", payload.Role, accessibleRoles)
+
 		if !hasPermission(payload.Role, accessibleRoles) {
 			err := fmt.Errorf("forbidden: role %s is not allowed to access this API", payload.Role)
 			ctx.AbortWithStatusJSON(http.StatusForbidden, errorResponse(err))
@@ -61,7 +64,7 @@ func (server *Server) authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 
 func hasPermission(userRole string, accessibleRoles []string) bool {
 	for _, role := range accessibleRoles {
-		if userRole == role {
+		if role == userRole {
 			return true
 		}
 	}

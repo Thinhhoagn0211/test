@@ -132,6 +132,31 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 	return i, err
 }
 
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, email, username, password, password_hash, phone, fullname, avatar, state, role, created_at, update_at FROM users
+WHERE username = $1
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+		&i.PasswordHash,
+		&i.Phone,
+		&i.Fullname,
+		&i.Avatar,
+		&i.State,
+		&i.Role,
+		&i.CreatedAt,
+		&i.UpdateAt,
+	)
+	return i, err
+}
+
 const getUsersAsc = `-- name: GetUsersAsc :many
 SELECT id, email, username, password, password_hash, phone, fullname, avatar, state, role, created_at, update_at FROM users
 WHERE (username ILIKE '%' || $1 || '%' OR fullname ILIKE '%' || $1 || '%' OR $1 IS NULL)
