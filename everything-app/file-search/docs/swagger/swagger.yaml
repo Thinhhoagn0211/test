@@ -52,6 +52,11 @@ definitions:
         type: string
       phone:
         type: string
+      role:
+        enum:
+        - admin
+        - operator
+        type: string
       username:
         type: string
     required:
@@ -59,6 +64,7 @@ definitions:
     - email
     - full_name
     - password
+    - role
     - username
     type: object
   api.loginUserRequest:

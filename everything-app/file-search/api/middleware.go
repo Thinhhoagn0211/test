@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/casbin/casbin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,7 +17,7 @@ const (
 	authorizationPayloadKey = "authorization_payload"
 )
 
-func (server *Server) authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
+func (server *Server) authMiddleware(tokenMaker token.Maker, enforcer *casbin.Enforcer) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authorizationHeader := ctx.GetHeader(authorizationHeaderKey)
 		if len(authorizationHeader) == 0 {
@@ -45,24 +46,26 @@ func (server *Server) authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			return
 		}
 
-		path := ctx.Request.URL.Path
-		method := ctx.Request.Method
-		isAllowed := server.enforcer.Enforce(server.role, path, method)
-		if !isAllowed {
-			err := errors.New("forbidden")
-			ctx.AbortWithStatusJSON(http.StatusForbidden, errorResponse(err))
+		var action string
+		switch ctx.Request.Method {
+		case http.MethodGet:
+			action = "read"
+		case http.MethodPost:
+			action = "write"
+		case http.MethodPut:
+			action = "write"
+		case http.MethodDelete:
+			action = "write"
+		}
+		// Enforce the policy
+		ok := enforcer.Enforce(server.role, ctx.FullPath(), action)
+		if !ok {
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "Access Denied"})
+			ctx.Abort()
 			return
 		}
+
 		ctx.Set(authorizationPayloadKey, payload)
 		ctx.Next()
 	}
-}
-
-func hasPermission(userRole string, accessibleRoles []string) bool {
-	for _, role := range accessibleRoles {
-		if role == userRole {
-			return true
-		}
-	}
-	return false
 }

@@ -3,6 +3,7 @@ postgres:
 	docker run --name postgres12 --restart=always -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16.3-alpine3.19
 createdb:
 	docker exec -it postgres12 createdb --username=root --owner=root everything_pg
+
 dropdb:
 	docker exec -it postgres12 dropdb everything_pg
 gen:
@@ -31,8 +32,8 @@ swagger:
 up:
 	docker compose up -d
 down:
-	docker compose down --remove-orphan
+	docker compose down --remove-orphans
 delete:
-	docker compose down --remove-orphan -v
+	docker compose down --remove-orphans -v
 	
 .PHONY: gen clean client server cert up down delete migrateup migratedown

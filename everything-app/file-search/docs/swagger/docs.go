@@ -451,6 +451,7 @@ const docTemplate = `{
                 "email",
                 "full_name",
                 "password",
+                "role",
                 "username"
             ],
             "properties": {
@@ -469,6 +470,13 @@ const docTemplate = `{
                 },
                 "phone": {
                     "type": "string"
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "admin",
+                        "operator"
+                    ]
                 },
                 "username": {
                     "type": "string"

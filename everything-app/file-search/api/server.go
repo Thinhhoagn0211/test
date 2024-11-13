@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	db "training/db/sqlc"
 	"training/file-search/util"
 
@@ -69,10 +70,14 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	}
 
 	enforcer := casbin.NewEnforcer("rbac_model.conf", "rbac_policy.csv")
+	// Explicitly load policies from the adapter if necessary
 	err = enforcer.LoadPolicy()
+	fmt.Println("Loaded policies: ", enforcer.GetPolicy())
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to load policy: %w", err)
 	}
+
 	server := &Server{
 		config:     config,
 		store:      store,
@@ -107,16 +112,32 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 	server.router = router
+	router.Use(func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
+		c.Header("Access-Control-Allow-Origin", origin) // Set the received Origin as the allowed origin
+		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PATCH")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, crossdomain")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	})
+
 	// @Security BearerAuth
 	router.POST("/login", server.loginUser)
 
-	authRoutes := router.Group("/api/v1").Use(server.authMiddleware(server.tokenMaker))
-	authRoutes.GET("/files", server.getFileSearcher)
-	authRoutes.GET("/users", server.getUsers)
-	authRoutes.POST("/users", server.createUser)
-	authRoutes.PATCH("/users", server.updateUser)
-	authRoutes.DELETE("/users/:id", server.deleteUser)
-	authRoutes.GET("/users/:id", server.getUserById)
+	authRoutes := router.Group("/api/v1").Use(server.authMiddleware(server.tokenMaker, server.enforcer))
+	{
+		// Use Authorize middleware to check if user has permission to access the route
+		authRoutes.GET("/files", server.getFileSearcher)
+		authRoutes.GET("/users", server.getUsers)
+		authRoutes.POST("/users", server.createUser)
+		authRoutes.PATCH("/users", server.updateUser)
+		authRoutes.DELETE("/users/:id", server.deleteUser)
+		authRoutes.GET("/users/:id", server.getUserById)
+	}
 
 	docs.SwaggerInfo.Host = server.config.HTTPServerAddress
 	// Register swagger route
@@ -125,7 +146,8 @@ func (server *Server) setupRouter() {
 
 // Start runs the HTTP server on a specific address.
 func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+	address = strings.Split(address, ":")[1]
+	return server.router.Run(":" + address)
 }
 
 func errorResponse(err error) gin.H {

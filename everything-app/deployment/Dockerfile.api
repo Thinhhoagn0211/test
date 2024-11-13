@@ -1,7 +1,7 @@
 FROM golang:latest
 
 # Set destination for COPY
-WORKDIR /grpc-client
+WORKDIR /file-search
 
 # Download Go modules
 COPY go.mod go.sum ./
@@ -12,9 +12,9 @@ RUN go mod download
 COPY . .
 
 # Build
-RUN CGO_ENABLED=0 GOOS=windows go build -o /grpc-client.exe ./file-index/cmd/client/main.go
+RUN go build -o /main.exe ./file-search/main.go
 
-EXPOSE 8080
+EXPOSE 8082
 
 # Run
-CMD ["/grpc-client.exe"]
+CMD ["/main.exe"]

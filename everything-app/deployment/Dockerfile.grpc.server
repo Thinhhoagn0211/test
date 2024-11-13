@@ -12,7 +12,7 @@ RUN go mod download
 COPY . ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=windows go build -o /grpc-server.exe ./file-index/cmd/server/main.go
+RUN go build -o /grpc-server.exe ./file-index/cmd/server/main.go
 
 EXPOSE 8080
 

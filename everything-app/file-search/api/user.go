@@ -58,6 +58,12 @@ func (server *Server) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+	switch req.Role {
+	case "admin":
+		server.enforcer.AddPolicy("admin", "/*", "*")
+	case "operator":
+		server.enforcer.AddPolicy("operator", "/api/v1/files", "GET")
+	}
 	rsp := newUserResponse(user)
 	ctx.JSON(http.StatusOK, rsp)
 }
@@ -240,21 +246,25 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	var rsp loginUserResponse
 
+	// Bind the request body to the loginUserRequest struct
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
+	// Check if the user is "admin" with hardcoded credentials
 	if req.Username == "admin" && req.Password == "admin" {
 		server.role = "admin"
+		// Create an access token for the admin user
 		accessToken, _, err := server.tokenMaker.CreateToken(
 			req.Username,
 			server.config.AccessTokenDuration,
+			server.role,
 		)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
+		// Prepare the response
 		rsp = loginUserResponse{
 			Status: 200,
 			Error:  "",
@@ -263,15 +273,14 @@ func (server *Server) loginUser(ctx *gin.Context) {
 				AccessToken: accessToken,
 			},
 		}
-
 	} else {
-
-		// If not admin, check the credentials in the database
+		// If the user is not "admin", check credentials in the database
 		user, err := server.store.GetUserByUsername(ctx, req.Username)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
+		// Check if the provided username matches the stored username
 		if user.Username != req.Username {
 			rsp = loginUserResponse{
 				Status: 404,
@@ -282,11 +291,13 @@ func (server *Server) loginUser(ctx *gin.Context) {
 			ctx.JSON(http.StatusUnauthorized, rsp)
 			return
 		}
+		server.role = user.Role
+		// Validate the password
 		if err := util.CheckPassword(req.Password, user.PasswordHash); err != nil {
 			ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
-		server.role = user.Role
+		// Prepare the response
 		rsp = loginUserResponse{
 			Status: 200,
 			Error:  "",
