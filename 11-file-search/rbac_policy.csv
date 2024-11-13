@@ -1,0 +1,6 @@
+p, admin, /api/v1/file/*, read
+p, admin, /api/v1/users, *
+p, admin, /api/v1/users/*, *
+p, operator, /api/v1/file/*, read
+g, admin, admin
+g, tenka, operator

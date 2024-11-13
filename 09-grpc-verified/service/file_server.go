@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"log"
-	"training/grpc-verified/pb"
-	"training/grpc-verified/serializer"
+	"training/09-grpc-verified/pb"
+	"training/09-grpc-verified/serializer"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

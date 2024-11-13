@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"training/grpc-verified/pb"
-	"training/grpc-verified/service"
+	"training/09-grpc-verified/pb"
+	"training/09-grpc-verified/service"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

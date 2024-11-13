@@ -12,3 +12,14 @@ services:
   #     dockerfile: ./file-index/deployment/Dockerfile.grpc.client
   #   depends_on:
   #     - server
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=everything_pg
+    ports:
+      - "5432:5432"
+    volumes:
+      - data-volume:/var/lib/postgresql/data

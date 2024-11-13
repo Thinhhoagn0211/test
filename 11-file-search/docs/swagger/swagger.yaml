@@ -1,0 +1,394 @@
+basePath: /
+definitions:
+  api.DataObject:
+    properties:
+      access_token:
+        type: string
+    type: object
+  api.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  api.Meta:
+    properties:
+      limit:
+        type: integer
+      metadata:
+        type: integer
+      offset:
+        type: integer
+    type: object
+  api.Metadata:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  api.Response:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/db.User'
+        type: array
+      meta:
+        $ref: '#/definitions/api.Meta'
+      status:
+        type: integer
+    type: object
+  api.createUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    required:
+    - avatar
+    - email
+    - full_name
+    - password
+    - role
+    - username
+    type: object
+  api.loginUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  api.loginUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/api.DataObject'
+      error:
+        type: string
+      errors:
+        items:
+          type: string
+        type: array
+      status:
+        type: integer
+    type: object
+  api.newDataFile:
+    properties:
+      checksum:
+        type: string
+      filepath:
+        type: string
+    type: object
+  api.newFileResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/api.newDataFile'
+        type: array
+      meta:
+        $ref: '#/definitions/api.Metadata'
+      status:
+        type: integer
+    type: object
+  api.userResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      username:
+        type: string
+    type: object
+  db.User:
+    properties:
+      avatar:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      password_hash:
+        type: string
+      phone:
+        type: string
+      role:
+        type: string
+      state:
+        type: integer
+      update_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8082
+info:
+  contact: {}
+  description: Server for file searching and managing users
+  title: File Searcher Web Server API
+  version: "2.0"
+paths:
+  /api/v1/files:
+    get:
+      consumes:
+      - application/json
+      description: Search files
+      parameters:
+      - description: File name
+        in: query
+        name: name
+        type: string
+      - description: File extension
+        in: query
+        name: extension
+        type: string
+      - description: Minimum file size
+        in: query
+        name: size_min
+        type: integer
+      - description: Maximum file size
+        in: query
+        name: size_max
+        type: integer
+      - description: Created after
+        in: query
+        name: created_after
+        type: string
+      - description: Created before
+        in: query
+        name: created_before
+        type: string
+      - description: Modified after
+        in: query
+        name: modified_after
+        type: string
+      - description: Modified before
+        in: query
+        name: modified_before
+        type: string
+      - description: Accessed after
+        in: query
+        name: accessed_after
+        type: string
+      - description: Accessed before
+        in: query
+        name: accessed_before
+        type: string
+      - description: Content
+        in: query
+        name: content
+        type: string
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.newFileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Search files
+      tags:
+      - files
+  /api/v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Get users
+      parameters:
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: State
+        in: query
+        name: state
+        type: integer
+      - description: Order by
+        in: query
+        name: orderby
+        type: string
+      - description: Order
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get users
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: Update user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Update user
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/api.createUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - users
+  /api/v1/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Delete user
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Get user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get user by ID
+      tags:
+      - users
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login user
+      parameters:
+      - description: User info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/api.loginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.loginUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Login user
+      tags:
+      - users
+security:
+- BearerAuth: []
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

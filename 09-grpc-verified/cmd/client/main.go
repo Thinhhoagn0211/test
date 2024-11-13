@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"training/grpc-verified/pb"
+	"training/09-grpc-verified/pb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
