@@ -1,9 +1,0 @@
-p, admin, /api/v1/files/*, read
-p, admin, /api/v1/users, *
-p, admin, /api/v1/users/*, *
-p, admin, /api/v1/users, write
-p, operator, /api/v1/files/*, read
-
-g, raven, admin
-g, admin, admin
-g, test, operator

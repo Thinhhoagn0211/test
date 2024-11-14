@@ -1,0 +1,7 @@
+p, admin, /api/v1/files/*, *
+p, admin, /api/v1/users, *
+p, admin, /api/v1/users/*, *
+p, admin, /api/v1/users, *
+p, operator, /api/v1/files/*, *
+
+g, operator, admin
