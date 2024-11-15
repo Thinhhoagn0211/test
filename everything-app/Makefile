@@ -18,7 +18,7 @@ migratedown:
 sqlc:
 	sqlc generate
 client:
-	go run file-index/cmd/client/main.go -address 0.0.0.0:8080
+	go run file-index/cmd/client/main.go -address 192.168.137.130:8080
 server:
 	go run file-index/cmd/server/main.go -port 8080
 api:
@@ -35,5 +35,7 @@ down:
 	docker compose down --remove-orphans
 delete:
 	docker compose down --remove-orphans -v
+evans:
+	evans --host 192.168.137.130 --port 8080 -r repl
 	
 .PHONY: gen clean client server cert up down delete migrateup migratedown

@@ -157,14 +157,9 @@ func getFileTimes(path string) (createdAt, modifiedAt, accessedAt time.Time, err
 		}
 		return createdAt, modifiedAt, accessedAt, err
 	}
-	if t.HasBirthTime() {
-		createdAt = t.BirthTime()
-	}
-	if t.HasChangeTime() {
-		modifiedAt = t.ModTime()
-	}
+	modifiedAt = t.ModTime()
+	createdAt = modifiedAt
 	accessedAt = t.AccessTime()
-
 	// Return times with no errors
 	return createdAt, modifiedAt, accessedAt, nil
 }

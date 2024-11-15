@@ -113,8 +113,8 @@ func (server *Server) setupRouter() {
 	router := gin.Default()
 	server.router = router
 	router.Use(func(c *gin.Context) {
-		origin := c.GetHeader("Origin")
-		c.Header("Access-Control-Allow-Origin", origin) // Set the received Origin as the allowed origin
+		// origin := c.GetHeader("Origin")
+		c.Header("Access-Control-Allow-Origin", "*") // Set the received Origin as the allowed origin
 		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PATCH")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, crossdomain")
 		c.Header("Access-Control-Allow-Credentials", "true")

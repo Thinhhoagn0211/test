@@ -3,21 +3,21 @@ services:
     build:
       context: .
       dockerfile: ./deployment/Dockerfile.grpc.server
-    command: [ "/grpc-server.exe", "-port", "8080" ]
+    entrypoint: [ "./main", "-port", "8080" ]
     ports:
       - "8080:8080"
     volumes:
-      - ./file-index:/grpc-server/C/
+      - ./file-index:/app/C/
 
-  # client:
-  #   build:
-  #     context: .
-  #     dockerfile: ./deployment/Dockerfile.grpc.client
-  #   command: [ "/grpc-client.exe", "-address", "172.20.176.1:8080" ]
-  #   volumes:
-  #     - ./cert:/grpc-client/cert
-  #   depends_on:
-  #     - server
+  client:
+    build:
+      context: .
+      dockerfile: ./deployment/Dockerfile.grpc.client
+    entrypoint: [ "./main", "-address", "192.168.137.130:8080" ]
+    volumes:
+      - ./cert:/app/cert
+    depends_on:
+      - server
 
   api:
     build:
@@ -25,17 +25,22 @@ services:
       dockerfile: ./deployment/Dockerfile.api
     ports:
       - "8082:8082"
-    depends_on:
-      - server
     volumes:
-      - ./app.env:/file-search/app.env
-  # postgres:
-  #   image: postgres
-  #   environment:
-  #     - POSTGRES_USER=root
-  #     - POSTGRES_PASSWORD=secret
-  #     - POSTGRES_DB=everything_pg
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - data-volume:/var/lib/postgresql/data
+      - ./app.env:/app/app.env
+      - ./cert:/app/cert
+    env_file:
+      - ./app.env
+
+#   postgres:
+#     image: postgres:16.3-alpine3.19
+#     environment:
+#       - POSTGRES_USER=root
+#       - POSTGRES_PASSWORD=secret
+#       - POSTGRES_DB=everything_pg
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - data-volume:/var/lib/postgresql/data
+
+# volumes:
+#   data-volume:

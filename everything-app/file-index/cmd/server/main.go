@@ -16,6 +16,7 @@ import (
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 )
 
 // loadTLSCredentials loads TLS credentials from the files
@@ -56,7 +57,7 @@ func main() {
 		log.Fatal(err)
 	}
 	// Open a database connection
-	conn, err := sql.Open("postgres", "postgresql://root:secret@localhost:5432/everything_pg?sslmode=disable")
+	conn, err := sql.Open("postgres", "postgresql://root:secret@192.168.137.130:5432/everything_pg?sslmode=disable")
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
@@ -71,7 +72,7 @@ func main() {
 	// Create a new gRPC server
 	grpcServer := grpc.NewServer(grpc.Creds(tlsCredential))
 	pb.RegisterFileIndexServer(grpcServer, fileDiscoveryServer)
-
+	reflection.Register(grpcServer)
 	address := fmt.Sprintf("0.0.0.0:%d", *port)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
